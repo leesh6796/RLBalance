@@ -32,7 +32,7 @@ class RoundRobinLoadBalancer():
 	def getForward(self): # () => (ip: str, port: int)
 		if self.i == self.maxIdx:
 			self.i = 0
-		forward = server_list[i]
+		forward = server_list[self.i]
 		self.i += 1
 		return forward
 
@@ -60,8 +60,8 @@ def ProxyHandle(srcSock, srcAddr, destSock, destAddr, tag, rewards):
 			break
 
 		if tag == 0 and data.decode()[0] == "t": # If clients
-			rewards.append(data.decode()[1:])
-			print(rewards[-1])
+			rewards.put(data.decode()[1:])
+			break
 
 		destSock.send(data)
 
@@ -80,9 +80,7 @@ def HealthCheckHandle(conn, index, serverStates):
 
 class MainServer:
 	def __init__(self, host, port):
-		self.socket_list = [] # 서버에서 관리하는 소켓들 저장. 첫 번째 소켓은 서버 소켓
 		self.healthCheckSocketList = []
-		self.channel = {}
 
 		self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -90,7 +88,7 @@ class MainServer:
 		self.server.listen(2000)
 
 		self.serverStates = Array('i', [0 for i in range(num_servers * 2)])
-		self.rewards = Array('d', [])
+		self.rewards = Queue()
 
 
 	def healthCheckStart(self):

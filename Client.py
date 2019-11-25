@@ -22,7 +22,7 @@ class MainClient:
 
 
 	def sendVideoRequest(self):
-		i = random.randrange(0, 4)
+		i = random.randrange(0, 1)
 		self.requestSize = self.size[i]
 		print("Request " + self.requestSize)
 		self.socket.send(self.requestSize.encode())
@@ -37,15 +37,13 @@ class MainClient:
 		while remain > 0:
 			buf = self.socket.recv(bufSize)
 			remain -= len(buf)
-			#recvFile.write(buf)
-		#recvFile.close()
 
 		endTime = time.time()
 
 		interval = str(endTime - startTime)
 		print("Success " + self.requestSize + " " + interval) # seconds
 
-		self.socket.send("t" + interval)
+		self.socket.send(("t" + interval).encode())
 
 		self.socket.close()
 
@@ -61,7 +59,7 @@ def Simulation1_handle(host, port, wait):
 
 def Simulation1():
 	try:
-		num_clients = 100
+		num_clients = 10
 		host, port = '127.0.0.1', 9090
 
 		processList = []
